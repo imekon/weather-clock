@@ -39,6 +39,7 @@ print("Firmware vers.", esp.firmware_version)
 print("MAC addr:", [hex(i) for i in esp.MAC_address])
 
 print("Connecting to AP...")
+# This copes with two AP's, trying each in turn
 choice = 0
 while not esp.is_connected:
     try:
@@ -54,8 +55,8 @@ while not esp.is_connected:
         continue
 
 print("Connected to", str(esp.ssid, "utf-8"), "\tRSSI:", esp.rssi)
-print("IP address: ", esp.pretty_ip(esp.ip_address))
 
+# Get NTP time, may make several attempts
 ntp = NTP(esp)
 ntp.set_time()
 while not ntp.valid_time:
@@ -63,12 +64,15 @@ while not ntp.valid_time:
     time.sleep(5)
     ntp.set_time(60 * 60)
 
+# Get the RTC time, not NTP updates RTC silently
 rtc = RTC()
 print("{:02}/{:02}/{:04} {:02}:{:02}".format(
     rtc.datetime.tm_mday, rtc.datetime.tm_mon, rtc.datetime.tm_year,
     rtc.datetime.tm_hour, rtc.datetime.tm_min
 ))
 
+# Use the OpenWeather API
+# london,gb is the location and can be changed appropriately
 WEATHER_URL = "http://api.openweathermap.org/data/2.5/weather?q=london,gb&units=metric&appid=" + secrets["open_weather"]
 response = requests.get(WEATHER_URL)
 weather = json.loads(response.text)
@@ -85,11 +89,13 @@ print("description: {}".format(desc));
 
 response.close()
 
+# Fonts should already be on your PyPortal for the original software installed
 font = bitmap_font.load_font("fonts/Arial-16.bdf")
 big_font = bitmap_font.load_font("fonts/Arial-Bold-24.bdf")
 
 vert_spacing = 30
 
+# gore card.bmp should be replaced with a suitable 320x240 bitmap
 with open("/gore card.bmp", "rb") as bitmap_file:
     bitmap = displayio.OnDiskBitmap(bitmap_file)
     tile_grid = displayio.TileGrid(bitmap, pixel_shader=displayio.ColorConverter())
