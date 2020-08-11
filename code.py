@@ -95,8 +95,13 @@ big_font = bitmap_font.load_font("fonts/Arial-Bold-24.bdf")
 
 vert_spacing = 30
 
+background_bitmap = "/gore card.bmp"
+
+if board.DISPLAY.width == 480:
+    background_bitmap = "/gore card titano.bmp"
+
 # gore card.bmp should be replaced with a suitable 320x240 bitmap
-with open("/gore card.bmp", "rb") as bitmap_file:
+with open(background_bitmap, "rb") as bitmap_file:
     bitmap = displayio.OnDiskBitmap(bitmap_file)
     tile_grid = displayio.TileGrid(bitmap, pixel_shader=displayio.ColorConverter())
 
