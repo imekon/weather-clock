@@ -74,20 +74,20 @@ print("{:02}/{:02}/{:04} {:02}:{:02}".format(
 # Use the OpenWeather API
 # london,gb is the location and can be changed appropriately
 WEATHER_URL = "http://api.openweathermap.org/data/2.5/weather?q=london,gb&units=metric&appid=" + secrets["open_weather"]
-response = requests.get(WEATHER_URL)
-weather = json.loads(response.text)
-weather_main = weather['main']
-temp = weather_main['temp']
-pressure = weather_main['pressure']
-humidity = weather_main['humidity']
-desc = weather['weather'][0]['description']
 
-print("temp: {}C".format(temp))
-print("pressure: {}".format(pressure))
-print("humidity: {}%".format(humidity))
-print("description: {}".format(desc));
+def update_weather():
+    print("updating weather...")
+    response = requests.get(WEATHER_URL)
+    weather = json.loads(response.text)
+    weather_main = weather['main']
+    temp = weather_main['temp']
+    pressure = weather_main['pressure']
+    humidity = weather_main['humidity']
+    desc = weather['weather'][0]['description']
+    response.close()
+    return (temp, pressure, humidity, desc)
 
-response.close()
+(temp, pressure, humidity, desc) = update_weather()
 
 # Fonts should already be on your PyPortal for the original software installed
 font = bitmap_font.load_font("fonts/Arial-16.bdf")
@@ -107,28 +107,28 @@ with open(background_bitmap, "rb") as bitmap_file:
 
     time_area = label.Label(big_font, text = "{:02}:{:02}:{:02}".format(
         # rtc.datetime.tm_mday, rtc.datetime.tm_mon, rtc.datetime.tm_year,
-        rtc.datetime.tm_hour, rtc.datetime.tm_min, rtc.datetime.tm_sec), color=0xff00ff)
+        rtc.datetime.tm_hour, rtc.datetime.tm_min, rtc.datetime.tm_sec), color=0xff00ff, max_glyphs = 30)
     time_area.x = 10
     time_area.y = 15
 
     date_area = label.Label(font, text = "{:02}/{:02}/{:04}".format(
-        rtc.datetime.tm_mday, rtc.datetime.tm_mon, rtc.datetime.tm_year))
+        rtc.datetime.tm_mday, rtc.datetime.tm_mon, rtc.datetime.tm_year), max_glyphs = 30)
     date_area.x = 10
     date_area.y = 50
 
-    temp_area = label.Label(font, text = "temp: {}C".format(temp))
+    temp_area = label.Label(font, text = "temp: {}C".format(temp), max_glyphs = 30)
     temp_area.x = 10
     temp_area.y = 50 + vert_spacing
 
-    pressure_area = label.Label(font, text = "pressure: {}".format(pressure))
+    pressure_area = label.Label(font, text = "pressure: {}".format(pressure), max_glyphs = 30)
     pressure_area.x = 10
     pressure_area.y = 50 + vert_spacing * 2
 
-    humidity_area = label.Label(font, text = "humidity: {}%".format(humidity))
+    humidity_area = label.Label(font, text = "humidity: {}%".format(humidity), max_glyphs = 30)
     humidity_area.x = 10
     humidity_area.y = 50 + vert_spacing * 3
 
-    desc_area = label.Label(font, text = desc)
+    desc_area = label.Label(font, text = desc, max_glyphs = 30)
     desc_area.x = 10
     desc_area.y = 50 + vert_spacing * 4
 
@@ -143,8 +143,17 @@ with open(background_bitmap, "rb") as bitmap_file:
 
     board.DISPLAY.show(text_group)
 
+    counter = 0
     while True:
         time_area.text = "{:02}:{:02}:{:02}".format(
             # rtc.datetime.tm_mday, rtc.datetime.tm_mon, rtc.datetime.tm_year,
             rtc.datetime.tm_hour, rtc.datetime.tm_min, rtc.datetime.tm_sec)
         time.sleep(1)
+        counter += 1
+        if counter > 60 * 60:
+            (temp, pressure, humidity, desc) = update_weather()
+            temp_area.text = "temp: {}C".format(temp)
+            pressure_area.text = "pressure: {}".format(pressure)
+            humidity_area.text = "humidity: {}%".format(humidity)
+            desc_area.text = desc
+            counter = 0
