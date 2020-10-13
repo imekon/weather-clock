@@ -7,6 +7,14 @@ You'll need to install the following libraries from the Adafruit libraries packa
 
 * adafruit_ntp
 
+Also add a `tz_offset` key to your `secrets.py`, specifying your local timezone's offset from UTC in hours, like this:
+```
+secrets = {
+  ...
+  'tz_offset' : 9,  # Tokyo is UTC+9
+  ...
+```
+
 ## NTP
 
 This requests the time from an NTP server and will set time and RTC silently for you, or fail. The code tries again repeatedly until it gets a time. It doesn't ask again.
