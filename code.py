@@ -56,13 +56,14 @@ while not esp.is_connected:
 
 print("Connected to", str(esp.ssid, "utf-8"), "\tRSSI:", esp.rssi)
 
+tz_offsecs = secrets.get("tz_offset", 0) * 60 * 60
 # Get NTP time, may make several attempts
 ntp = NTP(esp)
-ntp.set_time()
+ntp.set_time(tz_offsecs)
 while not ntp.valid_time:
     print("time not valid...")
     time.sleep(5)
-    ntp.set_time(60 * 60)
+    ntp.set_time(tz_offsecs)
 
 # Get the RTC time, not NTP updates RTC silently
 rtc = RTC()
